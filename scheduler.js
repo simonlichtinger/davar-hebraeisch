@@ -1,4 +1,3 @@
-const DAY = 24 * 60 * 60 * 1000;
 const MINUTE = 60 * 1000;
 const DIRECTIONS = ['he-de', 'de-he'];
 
@@ -12,9 +11,22 @@ export function cardKey(type, id, direction) {
   return `${type}:${id}:${direction}`;
 }
 
+/** Due dates follow local calendar days; short error retries retain their minute. */
+export function calendarReviewDate(now, days) {
+  const date = new Date(now);
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() + days);
+  return date.getTime();
+}
+
+export function reviewDue(record) {
+  const due = numeric(record?.due, 0);
+  return numeric(record?.interval) >= 1 ? calendarReviewDate(due, 0) : due;
+}
+
 /**
  * A deliberately transparent repetition schedule, tracked per direction.
- * Correct: 1 day, 3 days, then approximately 2.2 times the previous interval.
+ * Correct: next calendar day, then 3 days, then about 2.2 times the interval.
  * Incorrect: restart the sequence and make the card due again in one minute.
  * Intervals are capped at one year. The input record is never modified.
  */
@@ -28,7 +40,7 @@ export function scheduleReview(previous, correct, now = Date.now()) {
       : Math.min(365, Math.max(7, Math.round(numeric(old.interval, 3) * 2.2)));
   }
   return {
-    due: timestamp + (correct ? interval * DAY : MINUTE),
+    due: correct ? calendarReviewDate(timestamp, interval) : timestamp + MINUTE,
     interval,
     streak,
     lapses: count(old.lapses) + (correct ? 0 : 1),
@@ -132,8 +144,8 @@ export function buildSession({
     const isNew = !reviewed(record);
     const ranked = { ...card, isNew, tie: numeric(random(), 0.5) };
     if (isNew) fresh.push(ranked);
-    else if (numeric(record.due, 0) <= timestamp) {
-      due.push({ ...ranked, due: numeric(record.due, 0) });
+    else if (reviewDue(record) <= timestamp) {
+      due.push({ ...ranked, due: reviewDue(record) });
     }
   }
   due.sort((a, b) => a.due - b.due || a.tie - b.tie);
@@ -173,7 +185,7 @@ export function summarize({
     if (!reviewed(record)) newCards += 1;
     else {
       reviewedCards += 1;
-      if (numeric(record.due, 0) <= timestamp) dueCards += 1;
+      if (reviewDue(record) <= timestamp) dueCards += 1;
     }
   }
   return { eligibleWords: words.length, seenWords, learnedWords, dueCards, newCards, reviewedCards };

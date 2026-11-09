@@ -16,3 +16,10 @@ sup.reduced-vowel{font-size:.75em;line-height:0;vertical-align:super}
 .limit-note{background:var(--soft);border:1px solid #ced8c2;border-radius:16px;padding:22px 24px;margin:20px 0;text-align:left}.limit-note h2{font-size:20px;margin-bottom:8px}.limit-note p{font-size:13px;color:var(--muted)}.limit-note .backup-actions{margin-top:16px}.limit-select-label{display:block;font-weight:600;margin:18px 0 8px;color:var(--ink)}#raise-daily-limit{width:100%}.limit-persistence{display:block;font-size:12px;margin-top:12px;line-height:1.6}dialog .dialog-actions{flex-wrap:wrap}
 @media(max-width:540px){.limit-note{padding:20px}.limit-note .backup-actions{flex-direction:column}.limit-note .btn{width:100%;justify-content:center}}
 @media(max-width:540px){.word-exercise{min-height:0;padding:20px 16px}.word-exercise .exercise-head{margin-bottom:16px}.word-exercise h1{font-size:19px}.word-exercise .prompt{min-height:0;padding:12px 0}.word-exercise .prompt.hebrew{font-size:43px;line-height:1.6}.word-exercise .prompt.german{font-size:21px;line-height:1.4}.word-exercise .translit-reveal{min-height:23px;margin-bottom:10px}.word-exercise .choices{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:6px}.word-exercise .choice{font-size:13px;line-height:1.35;min-height:57px;padding:10px 9px;overflow-wrap:anywhere;hyphens:auto}.word-exercise .choice.hebrew{font-size:26px;line-height:1.5}}
+
+/* Vocabulary and form help stays beside the translation task. */
+.sentence-help{margin:2px 0 18px;padding:12px 15px;background:var(--paper);border:1px solid var(--line);border-radius:12px;font-size:14px;line-height:1.65;color:var(--ink)}
+.sentence-help summary{cursor:pointer;font-weight:600;color:var(--green)}
+.sentence-help p{margin:8px 0 0;overflow-wrap:anywhere}
+.sentence-exercise .translit-reveal:empty{display:none}
+.sentence-exercise .prompt{min-height:0;padding:18px 0}

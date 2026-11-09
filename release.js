@@ -1,1 +1,1 @@
-export const RELEASE = {"version":"77bd733dc3a7c62c","name":"1.2.0"};
+export const RELEASE = {"version":"b9e99852bdb4af6f","name":"1.3.0"};
