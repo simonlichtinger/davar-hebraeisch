@@ -110,6 +110,7 @@ function interleave(cards, limit, directions, startIndex = 0, previousDirection 
 /**
  * Returns only due and new cards up to the current lesson. Due cards always
  * precede new cards. newLimit counts cards (each translation direction is one).
+ * Infinity removes the new-card cap while retaining the total session limit.
  * New cards start with the earliest eligible lesson; ties are randomized.
  */
 export function buildSession({
@@ -119,7 +120,7 @@ export function buildSession({
 } = {}) {
   const timestamp = numeric(now, Date.now());
   const sessionLimit = count(limit);
-  const newCardLimit = count(newLimit);
+  const newCardLimit = newLimit === Infinity ? Infinity : count(newLimit);
   if (sessionLimit === 0) return [];
   const directions = DIRECTIONS.includes(direction) ? [direction] : DIRECTIONS;
   const records = progress && typeof progress === 'object' ? progress : {};

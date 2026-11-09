@@ -58,7 +58,8 @@ function cleanSettings(input) {
   if (!['mixed', 'he-de', 'de-he'].includes(settings.direction)) invalid('Die Übungsrichtung ist ungültig.');
   return {
     maxLesson: number(settings.maxLesson, 'Die letzte Lektion', 2, 49, true),
-    newLimit: number(settings.newLimit, 'Die Zahl neuer Karten', 0, 100, true),
+    newLimit: settings.newLimit === 'unlimited' ? 'unlimited'
+      : number(settings.newLimit, 'Die Zahl neuer Karten', 0, 100, true),
     sessionSize: number(settings.sessionSize, 'Die Sitzungsgröße', 5, 50, true),
     direction: settings.direction,
     includeSentences: boolean(settings.includeSentences, 'Die Satzeinstellung'),
