@@ -201,9 +201,12 @@ function passwordForm(root, envelope) {
   const privacy = element(document, 'p', 'Die Freigabe gilt für dieses Gerät. Wer es nutzt, kann bei gemerkter Freigabe ebenfalls auf die Lerninhalte zugreifen.');
   Object.assign(privacy.style, { fontSize: '12px', lineHeight: '1.6', marginTop: '20px' });
   form.append(label, password, rememberLabel, message, button);
-  panel.append(heading, subtitle, intro, form, privacy);
+  const appControls = element(document, 'div');
+  appControls.dataset.appStatus = 'access';
+  panel.append(heading, subtitle, intro, form, appControls, privacy);
   page.append(panel);
   root.replaceChildren(page);
+  root.dispatchEvent(new CustomEvent('davar:mount', { bubbles: true }));
   password.focus();
   return new Promise(resolve => {
     let busy = false;

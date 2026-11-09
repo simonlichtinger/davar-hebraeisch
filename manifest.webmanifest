@@ -7,6 +7,8 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "prefer_related_applications": false,
+  "related_applications": [{"platform":"webapp","url":"https://simonlichtinger.github.io/davar-hebraeisch/manifest.webmanifest","id":"https://simonlichtinger.github.io/davar-hebraeisch/"}],
   "background_color": "#f6f5ef",
   "theme_color": "#153e39",
   "categories": ["education"],

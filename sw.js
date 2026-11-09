@@ -1,8 +1,54 @@
-const VERSION="ca7681d43fd24cd5";
-const PREFIX='davar-'+new URL(self.registration.scope).pathname.replace(/[^a-z0-9]/gi,'_')+'-';
-const CACHE=PREFIX+VERSION;
-const ASSETS=["./","./app.js","./auth.js","./data/course.enc.json","./fonts/OFL.txt","./fonts/hebrew.ttf","./icons/icon-192.png","./icons/icon-512.png","./icons/icon.svg","./icons/maskable-512.png","./index.html","./manifest.webmanifest","./scheduler.js","./storage.js","./styles.css","./training.js"];
-self.addEventListener('install',event=>{event.waitUntil((async()=>{const cache=await caches.open(CACHE);try{await cache.addAll(ASSETS);}catch(error){await caches.delete(CACHE);throw error;}})());});
-self.addEventListener('activate',event=>{event.waitUntil((async()=>{const names=await caches.keys();await Promise.all(names.filter(n=>n.startsWith(PREFIX)&&n!==CACHE).map(n=>caches.delete(n)));await self.clients.claim();})());});
-self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting();if(event.data?.type==='CACHE_STATUS')event.waitUntil((async()=>{const cache=await caches.open(CACHE);const hits=await Promise.all(ASSETS.map(url=>cache.match(new URL(url,self.registration.scope).href)));event.ports[0]?.postMessage({ready:hits.every(Boolean),version:VERSION});})());});
-self.addEventListener('fetch',event=>{const req=event.request,url=new URL(req.url);if(req.method!=='GET'||url.origin!==self.location.origin||!url.pathname.startsWith(new URL(self.registration.scope).pathname))return;event.respondWith((async()=>{const cache=await caches.open(CACHE),cached=await cache.match(req,{ignoreSearch:true});if(cached)return cached;try{return await fetch(req);}catch(error){if(req.mode==='navigate')return await cache.match(new URL('./index.html',self.registration.scope).href);throw error;}})());});
+const VERSION = "6c9b887e4a9e71e2";
+const PREFIX = 'davar-' + new URL(self.registration.scope).pathname.replace(/[^a-z0-9]/gi, '_') + '-';
+const CACHE = PREFIX + VERSION;
+const ASSETS = [{"url":"./app.js","integrity":"sha256-B/g6LNqb0EAu9NARv7gVAljlgAeHqpDX1BX/JcpRROo="},{"url":"./auth.js","integrity":"sha256-YH87POX/+ztW+aw3sPMc0Iqkk23C/ZZhC+5W1Td3hes="},{"url":"./data/course.enc.json","integrity":"sha256-3afFm4b2Pmx5OTD8nFr9vXgHj0fVo6cvNE9336UHUgY="},{"url":"./fonts/OFL.txt","integrity":"sha256-m5/gKLW6dNIxZZobuvDtCbEedZ0cpqBwmZ4W0VFha0c="},{"url":"./fonts/hebrew.ttf","integrity":"sha256-qarMoLsHI0WZgrTZGviaCaiEV3L51s8UnYbecQf+y4o="},{"url":"./icons/icon-192.png","integrity":"sha256-H7WIbzju8xRdRajHOfxK8+rsI+ScGUj3JPT62qe9MLw="},{"url":"./icons/icon-512.png","integrity":"sha256-PYEOlOilUn9gqjNC1oh7wWHm5mAZ4PKm1A7QWOARn7g="},{"url":"./icons/icon.svg","integrity":"sha256-N1TFEKiKldApGB27Oc5PMjcgup4M+uqsXPO3slGXd60="},{"url":"./icons/maskable-512.png","integrity":"sha256-PYEOlOilUn9gqjNC1oh7wWHm5mAZ4PKm1A7QWOARn7g="},{"url":"./index.html","integrity":"sha256-lFBY/HyBWZtLmgL3Y/XRz/SyMM+5dOQrcoQ5q1wVTdk="},{"url":"./","integrity":"sha256-lFBY/HyBWZtLmgL3Y/XRz/SyMM+5dOQrcoQ5q1wVTdk="},{"url":"./manifest.webmanifest","integrity":"sha256-e/ZyuT/n6Q1B5jaBc5ojAt+lx/zyFqUYIS7FcN2mhvE="},{"url":"./pwa.js","integrity":"sha256-9h9WG1maOBAAh04QTCm2bb658tEToA/Z3AN0OdkGSPQ="},{"url":"./scheduler.js","integrity":"sha256-tOWTp4RFeJjscIXIOGykjQIlGvFjAHGso8Vcp9KFXH0="},{"url":"./storage.js","integrity":"sha256-Qwf2mg+9UMvpkdI5mJq8J8kyA5Xa0nhXQX7SklvesHQ="},{"url":"./styles.css","integrity":"sha256-fP36lknhTLQ7Ibv8fCucQau8S1enF3rPi6Y1/S66S9E="},{"url":"./training.js","integrity":"sha256-ANysiXQ0mvi+2RtUj1mKRY6WuPWEL5wSq+CtYfhjxvo="},{"url":"./transliteration.js","integrity":"sha256-Gv2mHzdMcqqLBq1ReRgsMefy/qKsl5cdrS2pXAlzNLA="},{"url":"./welcome.js","integrity":"sha256-QYySsginGk+WCKPutyd4svmp9zHPsAKV5fK1qM4FWS4="},{"url":"./release.js","integrity":"sha256-RzobSkJYSju17dwJMOJc9qXuJV5iwzc6UDlU1f87wnM="}];
+const scope = new URL(self.registration.scope);
+
+self.addEventListener('install', event => {
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    try {
+      // Integrity prevents a partially published release from mixing old and new files.
+      await cache.addAll(ASSETS.map(asset => new Request(new URL(asset.url, scope), {
+        cache: 'reload', integrity: asset.integrity,
+      })));
+    } catch (error) { await caches.delete(CACHE); throw error; }
+  })());
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil((async () => {
+    const names = await caches.keys();
+    await Promise.all(names.filter(name => name.startsWith(PREFIX) && name !== CACHE).map(name => caches.delete(name)));
+    await self.clients.claim();
+  })());
+});
+
+self.addEventListener('message', event => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
+  if (event.data?.type === 'CACHE_STATUS') event.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    const hits = await Promise.all(ASSETS.map(asset => cache.match(new URL(asset.url, scope).href)));
+    event.ports[0]?.postMessage({ ready: hits.every(Boolean), version: VERSION });
+  })());
+});
+
+self.addEventListener('fetch', event => {
+  const request = event.request, url = new URL(request.url);
+  if (request.method !== 'GET' || url.origin !== scope.origin || !url.pathname.startsWith(scope.pathname)) return;
+  // A cached release descriptor could incorrectly claim that an old app is current.
+  if (url.pathname === new URL('./version.json', scope).pathname) {
+    event.respondWith(fetch(request, { cache: 'no-store' }));
+    return;
+  }
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE);
+    const cached = await cache.match(request, { ignoreSearch: true });
+    if (cached) return cached;
+    try { return await fetch(request); }
+    catch (error) {
+      if (request.mode === 'navigate') return cache.match(new URL('./index.html', scope).href);
+      throw error;
+    }
+  })());
+});
