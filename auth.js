@@ -25,7 +25,7 @@ export function bytesToBase64(bytes) {
 
 export function base64ToBytes(value, { length, maxLength = MAX_CIPHERTEXT_BYTES } = {}) {
   if (typeof value !== 'string' || value.length === 0 || value.length > Math.ceil(maxLength / 3) * 4
-    || value.length % 4 !== 0 || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(value)) {
+    || value.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(value)) {
     throw new Error('Die Kursdatei enthält ungültige Binärdaten.');
   }
   const bytes = Uint8Array.from(atob(value), character => character.charCodeAt(0));
@@ -57,11 +57,26 @@ export function courseAdditionalData(envelope) {
 }
 
 export function validateCoursePayload(value) {
-  if (!plainObject(value) || Object.keys(value).length !== 2
+  if (!plainObject(value) || Object.keys(value).some(key => !['vocabulary','sentences','grammar'].includes(key))
     || !Array.isArray(value.vocabulary) || !Array.isArray(value.sentences)
     || value.vocabulary.length > 20_000 || value.sentences.length > 100_000
     || !value.vocabulary.every(plainObject) || !value.sentences.every(plainObject)) {
     throw new Error('Die entschlüsselten Kursdaten sind unvollständig oder ungültig.');
+  }
+  if (value.grammar !== undefined) {
+    const g = value.grammar;
+    if (!plainObject(g) || !Array.isArray(g.facts) || g.facts.length > 50000
+      || !g.facts.every(plainObject) || !plainObject(g.lessons) || !plainObject(g.cards)
+      || !Number.isInteger(g.throughLesson) || g.throughLesson < 1 || g.throughLesson > 57) {
+      throw new Error('Die Grammatikdaten sind ungültig.');
+    }
+    for (const [id, card] of Object.entries(g.cards)) {
+      if (!/^\d+[a-z]?$/.test(id) || !plainObject(card) || !Number.isInteger(card.page)
+        || card.page < 1 || card.page > 100 || typeof card.image !== 'string'
+        || !/^[A-Za-z0-9+/]+={0,2}$/.test(card.image) || card.image.length > 2000000) {
+        throw new Error('Eine Lernkarte ist ungültig.');
+      }
+    }
   }
   return value;
 }

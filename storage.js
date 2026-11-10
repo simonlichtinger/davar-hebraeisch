@@ -11,7 +11,7 @@ const STORAGE_KEY = 'davar.state.v1';
 const MAX_DATE = 8_640_000_000_000_000;
 const MAX_HISTORY = 100_000;
 const FORBIDDEN_PROPERTIES = new Set(['__proto__', 'constructor', 'prototype']);
-const DIRECTIONS = new Set(['he-de', 'de-he']);
+const DIRECTIONS = new Set(['he-de', 'de-he', 'form']);
 
 export function emptyState() {
   return { version: 1, settings: { ...DEFAULT_SETTINGS }, progress: {}, history: [], onboarded: false };
@@ -48,8 +48,8 @@ function boolean(value, label) {
 
 function keyParts(key) {
   if (typeof key !== 'string' || key.length > 256) invalid('Eine Kartenkennung ist ungültig.');
-  const match = /^(word|sentence):([^\s:]+):(he-de|de-he)$/u.exec(key);
-  if (!match) invalid('Eine Kartenkennung ist ungültig.');
+  const match = /^(word|sentence|grammar):([^\s:]+):(he-de|de-he|form)$/u.exec(key);
+  if (!match || (match[1] === 'grammar') !== (match[3] === 'form')) invalid('Eine Kartenkennung ist ungültig.');
   return { type: match[1], direction: match[3] };
 }
 
@@ -57,7 +57,7 @@ function cleanSettings(input) {
   const settings = object(input, 'Die Einstellungen');
   if (!['mixed', 'he-de', 'de-he'].includes(settings.direction)) invalid('Die Übungsrichtung ist ungültig.');
   return {
-    maxLesson: number(settings.maxLesson, 'Die letzte Lektion', 2, 49, true),
+    maxLesson: number(settings.maxLesson, 'Die letzte Lektion', 1, 57, true),
     newLimit: settings.newLimit === 'unlimited' ? 'unlimited'
       : number(settings.newLimit, 'Die Zahl neuer Karten', 0, 100, true),
     sessionSize: number(settings.sessionSize, 'Die Sitzungsgröße', 5, 50, true),
@@ -82,7 +82,7 @@ function cleanRecord(input) {
 function cleanHistoryEntry(input) {
   const entry = object(input, 'Ein Verlaufseintrag');
   const parts = keyParts(entry.key);
-  if (!['word', 'sentence'].includes(entry.type) || !DIRECTIONS.has(entry.direction)
+  if (!['word', 'sentence', 'grammar'].includes(entry.type) || !DIRECTIONS.has(entry.direction)
     || entry.type !== parts.type || entry.direction !== parts.direction) {
     invalid('Ein Verlaufseintrag passt nicht zu seiner Kartenkennung.');
   }
@@ -93,6 +93,7 @@ function cleanHistoryEntry(input) {
     isNew: boolean(entry.isNew, 'Der Kartenstatus'),
     type: entry.type,
     direction: entry.direction,
+    ...(entry.type === 'grammar' && ['identify','form','judge','cloze'].includes(entry.mode) ? {mode: entry.mode} : {}),
   };
 }
 
