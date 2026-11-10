@@ -53,6 +53,17 @@ function keyParts(key) {
   return { type: match[1], direction: match[3] };
 }
 
+function cleanExclusions(input) {
+  const exclusions=object(input, 'Die ausgelassenen Lektionen');
+  const result={};
+  for(const type of ['word','sentence','grammar']) {
+    const values=exclusions[type] ?? [];
+    if(!Array.isArray(values) || values.length>57) invalid('Die Lektionsauswahl ist ungültig.');
+    result[type]=[...new Set(Array.from(values, n=>number(n,'Eine ausgelassene Lektion',1,57,true)))].sort((a,b)=>a-b);
+  }
+  return result;
+}
+
 function cleanSettings(input) {
   const settings = object(input, 'Die Einstellungen');
   if (!['mixed', 'he-de', 'de-he'].includes(settings.direction)) invalid('Die Übungsrichtung ist ungültig.');
@@ -64,6 +75,7 @@ function cleanSettings(input) {
     direction: settings.direction,
     includeSentences: boolean(settings.includeSentences, 'Die Satzeinstellung'),
     showTransliteration: boolean(settings.showTransliteration, 'Die Umschrifteinstellung'),
+    ...(settings.excludedLessons === undefined ? {} : {excludedLessons:cleanExclusions(settings.excludedLessons)}),
   };
 }
 

@@ -1,0 +1,18 @@
+/** Lesson exclusions are independent per trainer and never delete progress. */
+export const LESSON_TYPES=['word','sentence','grammar'];
+export function lessonEnabled(lesson,settings,type){return Number(lesson)<=settings.maxLesson&&!(settings.excludedLessons?.[type]||[]).includes(Number(lesson));}
+export function scopeItems(items,settings,type){return items.filter(item=>lessonEnabled(item.lesson,settings,type));}
+export function setLessonExcluded(settings,type,lesson,excluded){
+ if(!LESSON_TYPES.includes(type)||!Number.isInteger(lesson)||lesson<1||lesson>settings.maxLesson)throw new Error('Ungültige Lektionsauswahl.');
+ const next={word:[],sentence:[],grammar:[],...settings.excludedLessons};
+ const values=new Set(next[type]);if(excluded)values.add(lesson);else values.delete(lesson);
+ return {...settings,excludedLessons:{...next,[type]:[...values].sort((a,b)=>a-b)}};
+}
+export function activeExclusions(settings,type){return (settings.excludedLessons?.[type]||[]).filter(n=>n<=settings.maxLesson);}
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const names={word:'Vokabeln',sentence:'Sätze',grammar:'Grammatik'};
+export function renderScopeSettings({settings,vocabulary,sentences,grammar,open=new Set()}){
+ const collections={word:vocabulary,sentence:sentences,grammar:grammar.facts};
+ return `<section class="panel settings-section lesson-exclusions"><h2>Lektionen gezielt auslassen</h2><p class="source-note">Hake die Lektionen an, die im jeweiligen Bereich nicht geübt werden sollen. Dein Lernstand bleibt erhalten; entferne den Haken, um sie wieder einzubeziehen.</p><p class="source-note scope-example">Zum Vorauslernen: Stelle oben zum Beispiel Lektion 10 ein und lasse bei Grammatik die Lektionen 9 und 10 aus. Die Vokabeln kannst du dann schon bis Lektion 10 lernen.</p>${LESSON_TYPES.map(type=>{const excluded=activeExclusions(settings,type),counts=new Map();for(const f of collections[type])counts.set(f.lesson,(counts.get(f.lesson)||0)+1);return `<details class="scope-group" data-scope-group="${type}" ${open.has(type)?'open':''}><summary>${names[type]}<span class="scope-count" data-scope-count="${type}">${excluded.length?excluded.length+' ausgelassen':'Alle einbezogen'}</span></summary><fieldset><legend class="scope-legend">${names[type]}: angehakte Lektionen auslassen</legend><div class="scope-grid">${Array.from({length:settings.maxLesson},(_,i)=>i+1).map(n=>`<label class="scope-lesson"><input type="checkbox" data-exclude-type="${type}" data-exclude-lesson="${n}" aria-label="${names[type]}: Lektion ${String(n).padStart(2,'0')} auslassen" ${excluded.includes(n)?'checked':''}><span><strong>Lektion ${String(n).padStart(2,'0')}</strong><small>${type==='grammar'&&grammar.lessons[n]?esc(grammar.lessons[n]):counts.has(n)?counts.get(n)+' '+(type==='word'?'Wörter':'Aufgaben'):'Bisher ohne Aufgaben'}</small></span></label>`).join('')}</div></fieldset><button class="text-button" data-scope-reset="${type}">Alle ${names[type]}-Lektionen wieder einbeziehen</button></details>`;}).join('')}<p class="source-note">Ausgelassene Lektionen erscheinen auch nicht als fällige Wiederholungen. Die Auswahl gilt nur für den jeweiligen Trainer. Das Nachschlagen im Wortschatz bleibt möglich.</p></section>`;
+}
+export function renderScopeNote(settings,type){const skipped=activeExclusions(settings,type);return skipped.length?`<div class="scope-note"><span>${esc(names[type])}: Lektion ${skipped.map(n=>String(n).padStart(2,'0')).join(', ')} ausgelassen.</span><button class="text-button" data-nav="einstellungen">Auswahl ändern</button></div>`:'';}

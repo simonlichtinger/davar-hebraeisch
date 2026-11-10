@@ -121,14 +121,15 @@ function interleave(cards, limit, directions, startIndex = 0, previousDirection 
 
 /**
  * Returns only due and new cards up to the current lesson. Due cards always
- * precede new cards. newLimit counts cards (each translation direction is one).
+ * precede new cards in mixed mode. 'new' and 'review' select only that pool.
+ * newLimit counts cards (each translation direction is one).
  * Infinity removes the new-card cap while retaining the total session limit.
  * New cards start with the earliest eligible lesson; ties are randomized.
  */
 export function buildSession({
   vocabulary = [], sentences = [], progress = {}, maxLesson = Infinity,
   newLimit = 10, limit = 20, direction = 'mixed', includeSentences = true,
-  now = Date.now(), random = Math.random,
+  now = Date.now(), random = Math.random, mode = 'mixed',
 } = {}) {
   const timestamp = numeric(now, Date.now());
   const sessionLimit = count(limit);
@@ -150,8 +151,8 @@ export function buildSession({
   }
   due.sort((a, b) => a.due - b.due || a.tie - b.tie);
   fresh.sort((a, b) => a.lesson - b.lesson || a.tie - b.tie);
-  const dueCards = interleave(due, sessionLimit, directions);
-  const newCards = interleave(
+  const dueCards = mode === 'new' ? [] : interleave(due, sessionLimit, directions);
+  const newCards = mode === 'review' ? [] : interleave(
     fresh, Math.min(newCardLimit, sessionLimit - dueCards.length), directions,
     dueCards.length, dueCards.at(-1)?.direction,
   );

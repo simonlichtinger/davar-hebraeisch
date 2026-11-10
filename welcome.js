@@ -21,7 +21,7 @@ export function showWelcome({ dialog, navigate = () => {}, force = false, storag
     <p id="welcome-intro">So übst du passend zu deinem Kurs:</p>
     <ul class="welcome-features">
       <li><strong>Deine Lektion wählen</strong><span>Stelle ein, bis zu welcher Lektion du gekommen bist. Davar übt den Wortschatz bis dahin.</span></li>
-      <li><strong>Vokabeln festigen</strong><span>Übe Hebräisch ↔ Deutsch. Wörter erscheinen wieder, wenn eine Wiederholung ansteht.</span></li>
+      <li><strong>Vokabeln festigen</strong><span>Übe Hebräisch ↔ Deutsch. Starte neue Wörter oder fällige Wiederholungen getrennt voneinander.</span></li>
       <li><strong>Sätze zusammensetzen</strong><span>Im Tab „Sätze“ übersetzt du mit Wortkacheln – mit abwechslungsreichen eigenen und biblischen Sätzen.</span></li>
       <li><strong>Grammatik anwenden</strong><span>Bestimme Formen, ergänze Lücken und prüfe Aussagen. Die passende Lernkarte kannst du direkt öffnen.</span></li>
       <li><strong>Fortschritt im Blick</strong><span>Einfache Statistiken zeigen deinen Stand. Antworten werden auf diesem Gerät gespeichert; nach dem Laden kannst du offline üben.</span></li>
